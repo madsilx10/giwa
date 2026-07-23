@@ -13,7 +13,8 @@ const DOJANG_ABI = ["function payAndIssueEAS()"];
 const CLAIM_ABI  = ["function claim()"];
 const NAME_ABI   = ["function register(string arg0)"];
 
-const DELAY = 3000;
+const NAMES_LOG = "registered_names.txt";
+
 const USED_FILE = "used_names.json";
 
 // ── Name generator ──────────────────────────────────────────────
@@ -77,6 +78,8 @@ async function processWallet(privkey, index, usedSet) {
     await sendTx(wallet, NAME_ADDR,   NAME_ABI,   "register", [name]);
     usedSet.add(name);
     saveUsed(usedSet);
+    fs.appendFileSync(NAMES_LOG, `${wallet.address} | ${name}\n`);
+    console.log(`  [NAME] ${name} → saved`);
     console.log(`  [DONE]\n`);
   } catch (e) {
     console.error(`  [ERR] ${e.message}\n`);
