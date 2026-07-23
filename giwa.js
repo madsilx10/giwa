@@ -59,10 +59,10 @@ function prompt(q) {
   return new Promise(res => rl.question(q, ans => { rl.close(); res(ans.trim()); }));
 }
 
-async function sendTx(wallet, contractAddr, abi, method, args = []) {
+async function sendTx(wallet, contractAddr, abi, method, args = [], value = 0n) {
   const contract = new ethers.Contract(contractAddr, abi, wallet);
   console.log(`  [${method}] sending...`);
-  const tx = await contract[method](...args);
+  const tx = await contract[method](...args, { value });
   const receipt = await tx.wait();
   console.log(`  [${method}] OK — ${receipt.hash}`);
 }
@@ -72,14 +72,14 @@ async function processWallet(privkey, index, usedSet) {
   const name = getUniqueName(usedSet);
   console.log(`\n[${index}] ${wallet.address} | name: ${name}`);
   try {
-    await sendTx(wallet, DOJANG_ADDR, DOJANG_ABI, "payAndIssueEAS");
+    await sendTx(wallet, DOJANG_ADDR, DOJANG_ABI, "payAndIssueEAS", [], ethers.parseEther("0.001"));
     await sendTx(wallet, CLAIM_ADDR,  CLAIM_ABI,  "claim");
     await sendTx(wallet, NAME_ADDR,   NAME_ABI,   "register", [name]);
     usedSet.add(name);
     saveUsed(usedSet);
-    console.log(`  [DONE]`);
+    console.log(`  [DONE]\n`);
   } catch (e) {
-    console.error(`  [ERR] ${e.message}`);
+    console.error(`  [ERR] ${e.message}\n`);
   }
 }
 
@@ -88,8 +88,9 @@ async function main() {
     .split("\n").map(l => l.trim()).filter(Boolean);
 
   const usedSet = loadUsed();
-  console.log(`Wallet loaded: ${keys.length} | Names used: ${usedSet.size}`);
-  console.log(`[1] Single wallet`);
+  console.log(`\nWallet loaded : ${keys.length}`);
+  console.log(`Names used    : ${usedSet.size}`);
+  console.log(`\n[1] Single wallet`);
   console.log(`[2] Range (x to y)`);
   console.log(`[3] All`);
 
