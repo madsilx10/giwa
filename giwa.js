@@ -14,6 +14,7 @@ const CLAIM_ABI  = ["function claim()"];
 const NAME_ABI   = ["function register(string arg0)"];
 
 const NAMES_LOG = "registered_names.txt";
+const DELAY = 3000;
 
 const USED_FILE = "used_names.json";
 
@@ -94,8 +95,8 @@ async function main() {
   console.log(`\nWallet loaded : ${keys.length}`);
   console.log(`Names used    : ${usedSet.size}`);
   console.log(`\n[1] Single wallet`);
-  console.log(`[2] Range (x to y)`);
-  console.log(`[3] All`);
+  console.log(`[2] All`);
+  console.log(`[3] Range (x to y)`);
 
   const choice = await prompt("Pilih: ");
   let targets = [];
@@ -104,11 +105,11 @@ async function main() {
     const idx = parseInt(await prompt(`Wallet ke- (1-${keys.length}): `)) - 1;
     targets = [[keys[idx], idx + 1]];
   } else if (choice === "2") {
+    targets = keys.map((k, i) => [k, i + 1]);
+  } else {
     const from = parseInt(await prompt("Dari wallet ke-: ")) - 1;
     const to   = parseInt(await prompt("Sampai wallet ke-: "));
     targets = keys.slice(from, to).map((k, i) => [k, from + i + 1]);
-  } else {
-    targets = keys.map((k, i) => [k, i + 1]);
   }
 
   for (let i = 0; i < targets.length; i++) {
